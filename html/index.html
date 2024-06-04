@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="/css/style.css" />
+		<title>A * in plain js</title>
+	</head>
+	<body>
+		<div class="header">
+			<h1 class="">A *</h1>
+			Visual representation of the A* algorithm in plain js
+		</div>
+		<canvas id="canvas" width="1000" height="1000"></canvas>
+		<div class="footer grid">
+			<div class="container">
+				Visited Nodes:
+				<span id="visitedNodes">0</span>
+			</div>
+			<div>
+				<button class="std-btn" onclick="startDraw()">Start Draw</button>
+				<button class="std-btn" onclick="stopDrawing()">Stop Draw</button>
+				<button class="std-btn" onclick="resetCanvas()">Reset Canvas</button>
+			</div>
+			<div>
+				<button class="std-btn" onclick="startAlgo()">Start Algo</button>
+				<button class="std-btn" onclick="resetAlgo()">Reset Algo</button>
+				<button class="std-btn" onclick="stopAlgo()">Stop</button>
+			</div>
+			<p>@github.com/johnkesko</p>
+		</div>
+		<script type="module" src="/js/main.js"></script>
+	</body>
+</html>
