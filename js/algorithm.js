@@ -4,6 +4,10 @@ import { startNode, endNode } from "./drawing.js";
 /*
 	A* Pathfinding Algorithm
 	Source: https://en.wikipedia.org/wiki/A*_search_algorithm
+
+	f(n) = g(n) + h(n)
+	g(n) = cost from start node + cost to current node
+	h(n) = heuristic cost to end node (estimated distance, like euclidean etc.)
 */
 
 class QElement {
@@ -127,9 +131,6 @@ export function resetAlgo() {
 	window.location.reload();
 }
 
-// f(n) = g(n) + h(n)
-// g(n) = cost from start node + cost to current node
-// h(n) = heuristic cost to end node (estimated distance, like euclidean etc.)
 function aStar(start, goal) {
 	let distanceAlgorithm = document.querySelector("#heuristic-distance").value;
 
