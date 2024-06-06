@@ -76,7 +76,7 @@ export function drawRandomizeNodes() {
 
 function drawStartEndNodes() {
 	if (startNode && endNode) {
-		// ensure start node is always above the end node
+		// Ensure start node is always above the end node for nice visuals
 		if (startNode.y > endNode.y) {
 			let temp = startNode;
 			startNode = endNode;
@@ -124,8 +124,8 @@ function drawGrid() {
 	ctx.textBaseline = "middle";
 
 	for (let i = square; i <= canvas.width - 2 * square; i += square) {
-		ctx.fillText((i / square).toString(), square / 2, i - square / 2 + square); // vertical
-		ctx.fillText((i / square).toString(), i - square / 2 + square, square / 2); // horizontal
+		ctx.fillText((i / square).toString(), square / 2, i - square / 2 + square); // Vertical
+		ctx.fillText((i / square).toString(), i - square / 2 + square, square / 2); // Horizontal
 	}
 }
 
