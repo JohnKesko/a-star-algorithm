@@ -13,20 +13,41 @@
 		</div>
 		<canvas id="canvas" width="1000" height="1000"></canvas>
 		<div class="footer grid">
-			<div class="container">
-				Visited Nodes:
-				<span id="visitedNodes">0</span>
+			<div>
+				<label for="heuristic" id="grp-box-label">Choose heuristic distance h(n):</label>
+				<select name="heuristic" id="heuristic-distance">
+					<option value="diagonal">Diagonal</option>
+					<option value="euclidean">Euclidean</option>
+					<option value="manhattan">Manhattan</option>
+				</select>
 			</div>
 			<div>
+				<label for="speed">Animation Speed:</label>
+				<input type="number" id="speed" placeholder="Seconds" value="0.25" />
+			</div>
+
+			<div>
+				<label for="startposition">Start Node Position:</label>
+				<input type="number" id="start-node-x" class="node" value="1" />
+				<input type="number" id="start-node-y" class="node" value="1" />
+			</div>
+			<div>
+				<label for="endposition">End Node Position:</label>
+				<input type="number" id="end-node-x" class="node" value="48" />
+				<input type="number" id="end-node-y" class="node" value="48" />
+			</div>
+			<div>
+				<button class="std-btn" id="randomize-nodes">Randomize Start and End</button>
+			</div>
+			<p id="message">#</p>
+			<div>
+				<button class="std-btn" onclick="startAlgo()">Start A*</button>
+				<button class="std-btn" onclick="resetAlgo()">Reset</button>
+			</div>
+			<!-- <div>
 				<button class="std-btn" onclick="startDraw()">Start Draw</button>
-				<button class="std-btn" onclick="stopDrawing()">Stop Draw</button>
 				<button class="std-btn" onclick="resetCanvas()">Reset Canvas</button>
-			</div>
-			<div>
-				<button class="std-btn" onclick="startAlgo()">Start Algo</button>
-				<button class="std-btn" onclick="resetAlgo()">Reset Algo</button>
-				<button class="std-btn" onclick="stopAlgo()">Stop</button>
-			</div>
+			</div> -->
 			<p>@github.com/johnkesko</p>
 		</div>
 		<script type="module" src="/js/main.js"></script>

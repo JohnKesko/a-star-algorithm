@@ -1,181 +1,122 @@
-import { canvas, ctx, square } from "./constants.js";
-import { allNodes, startNode, endNode } from "./drawing.js";
+import { ctx } from "./constants.js";
+import { startNode, endNode } from "./drawing.js";
 
 /*
 	A* Pathfinding Algorithm
 	Source: https://en.wikipedia.org/wiki/A*_search_algorithm
 */
 
-// let html = "";
-// const listOfNumbers = [1, 2, 3, 4, 5];
-// for (let i = 0; i < listOfNumbers.length; i++) {
-// 	html += `<p>${i}</p>`;
-// }
-// document.querySelector(".container").innerHTML = html;
-
-let isAlgorithmRunning = false;
-
-class Queue {
-	constructor() {
-		this.items = {};
-		this.top = 0;
-		this.bottom = 0;
+class QElement {
+	constructor(element, priority) {
+		this.element = element;
+		this.priority = priority;
 	}
-	enqueue(item) {
-		this.items[this.bottom] = item;
-		this.bottom++;
-		return item;
+}
+
+class PriorityQueue {
+	constructor() {
+		this.items = [];
+	}
+
+	enqueue(element, priority = 0) {
+		let qElement = new QElement(element, priority);
+		let contain = false;
+
+		// iterating through the entire array to add element at the correct location of the Queue
+		for (let i = 0; i < this.items.length; i++) {
+			if (this.items[i].priority > qElement.priority) {
+				this.items.splice(i, 0, qElement);
+				contain = true;
+				break;
+			}
+		}
+
+		// if element have the highest priority, add it to the end of the queue
+		if (!contain) {
+			this.items.push(qElement);
+		}
 	}
 	dequeue() {
-		const item = this.items[this.top];
-		delete this.items[this.top];
-		this.top++;
-		return item;
+		// return the dequeued element and remove it
+		// if the queue is empty, return Underflow
+		if (this.isEmpty()) return "Underflow";
+		return this.items.shift();
 	}
 	peek() {
-		return this.items[this.top];
+		// returns the highest priority element without removing it
+		if (this.isEmpty()) return "No elements in Queue";
+		return this.items[0];
 	}
-	get printQueue() {
-		return this.items;
+	rear() {
+		// returns the lowest priority element of the queue
+		if (this.isEmpty()) return "No elements in Queue";
+		return this.items[this.items.length - 1];
+	}
+	update(element, newPriority) {
+		// Find the element in the queue
+		let found = false;
+		for (let i = 0; i < this.items.length; i++) {
+			if (this.items[i].element === element) {
+				// Update only if the new priority is lower
+				if (this.items[i].priority > newPriority) {
+					this.items.splice(i, 1); // Remove the old item
+					this.enqueue(element, newPriority); // Reinsert with new priority
+				}
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			this.enqueue(element, newPriority);
+		}
+	}
+	contains(element) {
+		for (let i = 0; i < this.items.length; i++) {
+			if (this.items[i].element === element) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	isEmpty() {
+		// return true if the queue is empty.
+		return this.items.length == 0;
+	}
+	clear() {
+		console.log("Clearing items in the queue");
+		this.items = [];
+	}
+	printQueue() {
+		let str = "";
+		for (let i = 0; i < this.items.length; i++) {
+			str += this.items[i].element + " ";
+			return str;
+		}
 	}
 }
 
-let timer = 2000;
-let openSet = []; // Nodes to be visited
-let closedSet = []; // Nodes already visited
+let isAlgorithmRunning = false;
+let openSet = new PriorityQueue(); // Nodes to be visited
+let closedSet = new Set(); // Nodes already visited
 let path = []; // The final path
 
+function clearPathData() {
+	console.log("Clearing path data");
+	openSet.clear();
+	closedSet.clear();
+	path = [];
+	console.log("Cleared path data", { openSet: openSet, closedSet: closedSet, path: path });
+}
+
 export function startAlgo() {
-	openSet.push(startNode);
+	clearPathData();
 	isAlgorithmRunning = true;
+
 	if (isAlgorithmRunning) {
+		console.log("Running A* algorithm");
 		aStar(startNode, endNode);
 	}
-}
-
-// f(n) = g(n) + h(n)
-// g(n) = cost from start node + cost to current node
-// h(n) = heuristic cost to end node (estimated distance, like euclidean etc.)
-function aStar(node, endNode) {
-	openSet = [startNode];
-	node.g = 0;
-	node.h = 0;
-	node.f = node.g + node.h;
-
-	// While there are nodes to visit
-	while (openSet.length > 0) {
-		let lowestScore = 0;
-
-		// First iteration is the start node.
-		// If the unvisited node (openSet[i]) has a lower f score than the current node -
-		// then the current node is the unvisited node.
-		for (let i = 0; i < openSet.length; i++) {
-			if (openSet[i].f < openSet[lowestScore].f) {
-				lowestScore = i;
-				console.log("lowestScore => ", lowestScore);
-			}
-		}
-
-		let current = openSet[lowestScore]; // Node with the lowest total f score
-
-		if (current === endNode) {
-			console.log("FOUND THE END NODE!");
-			let temp = current;
-			path.push(temp);
-
-			while (temp.previous) {
-				path.push(temp.previous);
-				temp = temp.previous;
-			}
-
-			path.reverse();
-			drawOptimalPath(path);
-			break;
-		}
-
-		removeFromArray(openSet, current); // Remove current from unvisited nodes
-		closedSet.push(current); // Add current node to already visited nodes
-
-		// Next, check all neighbours of the current node (top, bottom, left, right => pathfinding algorithm).
-		// The algorithm will check the neighbours of the current node and calculate the total f score.
-		// If the g score is lower than the current g score, then the current f score is updated.
-		// It will continue to check the neighbours of the current node until we found the end node.
-		// If the end node is found, we stop and draw the path.
-		// If the end node is not found, continue to check the neighbours of the current node.
-		let neighbors = Object.values(current.neighbours);
-
-		for (let i = 0; i < neighbors.length; i++) {
-			let neighbor = neighbors[i];
-
-			if (!closedSet.includes(neighbor) && !neighbor.wall) {
-				let tentative_gScore = current.g + manhattanDistance(current, neighbor);
-
-				if (!openSet.includes(neighbor) || tentative_gScore < neighbor.g) {
-					neighbor.g = tentative_gScore;
-					neighbor.h = manhattanDistance(neighbor, endNode);
-					neighbor.f = neighbor.g + neighbor.h;
-					neighbor.previous = current;
-
-					if (!openSet.includes(neighbor)) {
-						openSet.push(neighbor);
-					}
-
-					drawOpenSet(openSet);
-					drawClosedSet(closedSet);
-				}
-			}
-		}
-	}
-}
-
-// fillRect(x, y, width, height)
-const intersectSize = 5;
-function drawOpenSet(openSet) {
-	for (let i = 0; i < openSet.length; i++) {
-		const xPos = openSet[i].x - intersectSize / 2;
-		const yPos = openSet[i].y - intersectSize / 2;
-
-		ctx.fillRect(xPos, yPos, 5, 5);
-		ctx.fillStyle = "green";
-	}
-}
-
-function drawClosedSet(closedSet) {
-	for (let i = 0; i < closedSet.length; i++) {
-		const xPos = closedSet[i].x - intersectSize / 2;
-		const yPos = closedSet[i].y - intersectSize / 2;
-
-		ctx.fillRect(xPos, yPos, 5, 5);
-		ctx.fillStyle = "red";
-	}
-}
-
-function drawOptimalPath(path) {
-	ctx.beginPath();
-	ctx.moveTo(path[0].x, path[0].y);
-
-	for (let i = 1; i < path.length; i++) {
-		ctx.lineTo(path[i].x, path[i].y);
-	}
-
-	ctx.strokeStyle = "blue";
-	ctx.lineWidth = 4;
-
-	ctx.stroke();
-}
-
-function drawPath(path) {
-	ctx.beginPath();
-	ctx.moveTo(path[0].x, path[0].y);
-
-	for (let i = 1; i < path.length; i++) {
-		ctx.lineTo(path[i].x, path[i].y);
-	}
-
-	ctx.strokeStyle = "red";
-	ctx.lineWidth = 3;
-
-	ctx.stroke();
 }
 
 export function stopAlgo() {
@@ -186,56 +127,165 @@ export function resetAlgo() {
 	window.location.reload();
 }
 
+// f(n) = g(n) + h(n)
+// g(n) = cost from start node + cost to current node
+// h(n) = heuristic cost to end node (estimated distance, like euclidean etc.)
+function aStar(start, goal) {
+	let distanceAlgorithm = document.querySelector("#heuristic-distance").value;
+
+	start.g = 0;
+	start.h = calculateHeuristic(start, endNode, distanceAlgorithm);
+	start.f = start.g + start.h;
+	openSet.enqueue(start, start.f);
+	closedSet.add(start);
+
+	document.querySelector("#heuristic-distance").addEventListener("change", (e) => {
+		distanceAlgorithm = e.target.value;
+	});
+
+	// While there are nodes to visit
+	while (!openSet.isEmpty()) {
+		let current = openSet.dequeue().element;
+
+		if (current.visited) continue;
+
+		current.visited = true;
+
+		if (current === goal) {
+			console.log("Goal reached, reconstructing path.");
+			return reconstructPath(current);
+		}
+
+		current.neighbors.forEach((neighbor) => {
+			if (neighbor.wall || neighbor.visited) {
+				return;
+			}
+
+			let newCost = current.g + calculateHeuristic(current, neighbor, distanceAlgorithm);
+
+			if (!openSet.contains(neighbor) || newCost < neighbor.g) {
+				neighbor.g = newCost;
+				neighbor.h = calculateHeuristic(neighbor, goal, distanceAlgorithm);
+				neighbor.f = neighbor.g + neighbor.h;
+				neighbor.previous = current;
+
+				if (!openSet.contains(neighbor)) {
+					openSet.enqueue(neighbor, neighbor.f);
+				} else {
+					openSet.update(neighbor, neighbor.f);
+				}
+
+				closedSet.add(neighbor);
+			}
+		});
+	}
+
+	console.log("No path found after exhausting openSet.");
+}
+
 // Euclidean distance
 function euclideanDistance(start, end) {
-	return Math.sqrt(Math.pow(end.x - start.x, 2)) + Math.sqrt(Math.pow(end.y - start.y, 2));
+	return Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
 }
 
 // Manhattan distance
 function manhattanDistance(start, end) {
-	return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
+	if (!start || !end) return Infinity;
+	return Math.abs(end.x - start.x) + Math.abs(end.y - start.y);
 }
 
 // Diagnostic distance
-function diagonalDistance(node) {
-	const dx = Math.abs(node.x - endNode.x);
-	const dy = Math.abs(node.y - endNode.y);
+function diagonalDistance(start, end) {
+	const dx = Math.abs(start.x - end.x);
+	const dy = Math.abs(start.y - end.y);
 	const diag = Math.min(dx, dy);
-	const straight = dx + dy;
-	return Math.sqrt(2) * diag + straight - 2 * diag;
+	const straight = Math.max(dx, dy);
+	return Math.sqrt(2) * diag + (straight - diag);
 }
 
-function removeFromArray(arr, element) {
-	for (let i = arr.length - 1; i >= 0; i--) {
-		if (arr[i] === element) {
-			arr.splice(i, 1);
-		}
+function calculateHeuristic(current, target, method) {
+	switch (method) {
+		case "euclidean":
+			return euclideanDistance(current, target);
+		case "manhattan":
+			return manhattanDistance(current, target);
+		case "diagonal":
+			return diagonalDistance(current, target);
+		default:
+			return manhattanDistance(current, target);
 	}
 }
 
-// visitedNodes.push(node);
-// let html = "";
-// for (let i = 0; i <= visitedNodes.length - 1; i++) {
-// 	html = i;
-// }
-// document.getElementById("visitedNodes").innerHTML = html;
+function reconstructPath(current) {
+	let temp = current;
 
-// if (startNode.weight > rightNode.weight) {
-// 	// Move x
-// 	startNode.x += square;
-// 	ctx.lineTo(startNode.x, startNode.y);
-// 	// Move y
-// 	startNode.y += square;
-// 	ctx.lineTo(startNode.x, startNode.y);
-// 	// Style path
-// 	ctx.strokeStyle = "red";
-// 	ctx.lineWidth = 3;
-// 	ctx.stroke();
-// }
+	while (temp) {
+		path.push(temp);
+		temp = temp.previous;
+	}
 
-// // 	// Move x
-// startNode.x += square;
-// ctx.lineTo(startNode.x, startNode.y);
-// // 	// Move y
-// startNode.y += square;
-// ctx.lineTo(startNode.x, startNode.y);
+	path.reverse();
+	drawOpenSet(openSet);
+	drawClosedSet(closedSet);
+	animatePath(path);
+	document.getElementById(
+		"message"
+	).innerHTML = `Found the end @ x: ${endNode.x} y: ${endNode.y}`;
+
+	isAlgorithmRunning = false;
+}
+
+function animatePath(path) {
+	let index = 0;
+	let lastTimeStamp = 0;
+	let speed = document.querySelector("#speed").value;
+	const delay = speed > 0 ? speed * 1000 : 1000;
+
+	function drawStep(timestamp) {
+		if (index < path.length) {
+			if (!lastTimeStamp || timestamp - lastTimeStamp >= delay) {
+				let node = path[index];
+				ctx.fillStyle = "red";
+				ctx.fillRect(node.x, node.y, node.width, node.height);
+				index++;
+				lastTimeStamp = timestamp;
+			}
+
+			requestAnimationFrame(drawStep);
+		}
+	}
+
+	requestAnimationFrame(drawStep);
+}
+
+// fillRect(x, y, width, height)
+const intersectSize = 5;
+function drawOpenSet(openSet) {
+	ctx.fillStyle = "green";
+
+	openSet.items.forEach((qElement) => {
+		const node = qElement.element;
+		const xPos = node.x - intersectSize / 2;
+		const yPos = node.y - intersectSize / 2;
+
+		ctx.fillRect(xPos, yPos, intersectSize, intersectSize);
+	});
+}
+
+function drawClosedSet(closedSet) {
+	ctx.fillStyle = "red";
+
+	closedSet.forEach((node) => {
+		const xPos = node.x - intersectSize / 2;
+		const yPos = node.y - intersectSize / 2;
+
+		ctx.fillRect(xPos, yPos, intersectSize, intersectSize);
+	});
+}
+
+// Next, check all neighbors of the current node (top, bottom, left, right => pathfinding algorithm).
+// The algorithm will check the neighbors of the current node and calculate the total f score.
+// If the g score is lower than the current g score, then the current f score is updated.
+// It will continue to check the neighbors of the current node until we found the end node.
+// If the end node is found, we stop and draw the path.
+// If the end node is not found, continue to check the neighbors of the current node.
