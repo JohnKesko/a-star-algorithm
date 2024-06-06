@@ -94,8 +94,8 @@ function drawStartEndNodes() {
 		ctx.fillStyle = "black";
 		const center = square / 2;
 
-		ctx.fillText(startNode.text, startNode.x + center, startNode.y + center);
-		ctx.fillText(endNode.text, endNode.x + center, endNode.y + center);
+		// ctx.fillText(startNode.text, startNode.x + center, startNode.y + center);
+		// ctx.fillText(endNode.text, endNode.x + center, endNode.y + center);
 	}
 }
 
@@ -123,10 +123,10 @@ function drawGrid() {
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 
-	for (let i = square; i <= canvas.width - 2 * square; i += square) {
-		ctx.fillText((i / square).toString(), square / 2, i - square / 2 + square); // Vertical
-		ctx.fillText((i / square).toString(), i - square / 2 + square, square / 2); // Horizontal
-	}
+	// for (let i = square; i <= canvas.width - 2 * square; i += square) {
+	// 	ctx.fillText((i / square).toString(), square / 2, i - square / 2 + square); // Vertical
+	// 	ctx.fillText((i / square).toString(), i - square / 2 + square, square / 2); // Horizontal
+	// }
 }
 
 // fillRect(x, y, width, height)
